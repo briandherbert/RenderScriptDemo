@@ -1,0 +1,82 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:id="@+id/lin_ad"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:gravity="center"
+        android:orientation="horizontal" />
+
+    <ImageView
+        android:id="@+id/img_photo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="Image"
+        android:scaleType="center" />
+
+    <LinearLayout
+        android:id="@+id/lin_buttons_row1"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_above="@+id/lin_buttons_row2"
+        android:gravity="center" >
+
+        <Button
+            android:id="@+id/btn_gauss"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/button_bg"
+            android:onClick="onClick"
+            android:text="Gauss" />
+
+        <Button
+            android:id="@+id/btn_convolve"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/button_bg"
+            android:onClick="onClick"
+            android:text="Convolve" />
+
+        <Button
+            android:id="@+id/btn_gray"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/button_bg"
+            android:onClick="onClick"
+            android:text="Gray" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@id/lin_buttons_row2"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:gravity="center" >
+
+        <Button
+            android:id="@+id/btn_gray_rs"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/button_bg"
+            android:onClick="onClick"
+            android:text="GrayRS" />
+
+        <Button
+            android:id="@+id/btn_wavy"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/button_bg"
+            android:onClick="onClick"
+            android:text="Wavy" />
+    </LinearLayout>
+
+</RelativeLayout>
