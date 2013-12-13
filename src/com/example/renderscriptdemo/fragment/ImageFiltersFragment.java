@@ -1,6 +1,7 @@
 package com.example.renderscriptdemo.fragment;
 
 import ca.tutortutor.grayscale.ScriptC_grayscale;
+import ca.tutortutor.grayscale.ScriptC_histogram;
 import ca.tutortutor.wavyimage.ScriptC_wavy;
 
 import com.example.renderscriptdemo.R;
@@ -49,6 +50,7 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 	// Custom
 	ScriptC_grayscale scriptGrayscaleManual;
 	ScriptC_wavy scriptWavyManual;
+	ScriptC_histogram scriptHistogram;
 
 	private ImageView mImg;
 	private Bitmap mBmp;
@@ -69,8 +71,6 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 		Display screen = wm.getDefaultDisplay();
 		screenWidth = screen.getWidth();
 		screenHeight = screen.getHeight();
-
-		initScripts();
 	}
 
 	@Override
@@ -95,6 +95,8 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 		for (int i = 0; i < linButtons2.getChildCount(); i++) {
 			linButtons2.getChildAt(i).setOnClickListener(this);
 		}
+		
+		initScripts();
 
 		return view;
 	}
@@ -149,10 +151,16 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 
 		// Grayscale Custom
 		scriptGrayscaleManual = new ScriptC_grayscale(mRS, res, R.raw.grayscale);
-		// scriptGrayscaleManual.set_script(scriptGrayscaleManual);
 
 		// Wavy
 		scriptWavyManual = new ScriptC_wavy(mRS, res, R.raw.wavy);
+		
+		// Histogram
+		scriptHistogram = new ScriptC_histogram(mRS);
+		scriptHistogram.set_gWidth(mBmp.getWidth());
+		scriptHistogram.set_gHeight(mBmp.getHeight());
+		
+		
 	}
 
 	public void scaleBitmapToScreen() {
@@ -164,7 +172,8 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 
 		float widthRatio = screenWidth / sW;
 		float heightRatio = screenHeight / sH;
-
+		
+		
 		float ratio = widthRatio > heightRatio ? widthRatio : heightRatio;
 
 		Log.v("blarg", "ratio is " + ratio);
@@ -189,14 +198,9 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 		Resources res = getResources();
 
 		BitmapFactory.Options options = new BitmapFactory.Options();
-		mBmp = BitmapFactory.decodeResource(res, R.drawable.scene, options);
-
-		Log.v("blarg",
-				"bmp size before is " + mBmp.getRowBytes() * mBmp.getHeight());
+		mBmp = BitmapFactory.decodeResource(res, R.drawable.dalmation, options);
 
 		scaleBitmapToScreen();
-		Log.v("blarg",
-				"bmp size after is " + mBmp.getRowBytes() * mBmp.getHeight());
 
 		mImg.setImageBitmap(mBmp);
 	}
@@ -214,6 +218,8 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 			(new GrayManualTask()).execute(mBmp);
 		} else if (id == R.id.btn_wavy) {
 			(new WavyManualTask()).execute(mBmp);
+		} else if (id == R.id.btn_histogram) {
+			(new HistogramTask()).execute(mBmp);
 		}
 	}
 
@@ -221,10 +227,10 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 		protected Bitmap doInBackground(Bitmap... bmps) {
 			Bitmap bmp = bmps[0];
 
-			Allocation tmpIn = Allocation.createFromBitmap(mRS, bmp);
-			Allocation tmpOut = Allocation.createFromBitmap(mRS, bmp);
-			applyFilter(tmpIn, tmpOut);
-			tmpOut.copyTo(bmp);
+			Allocation alloc = Allocation.createFromBitmap(mRS, bmp);
+			//Allocation tmpOut = Allocation.createFromBitmap(mRS, bmp);
+			applyFilter(alloc, alloc);
+			alloc.copyTo(bmp);
 			return bmp;
 		}
 
@@ -264,7 +270,9 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 		void applyFilter(Allocation tmpIn, Allocation tmpOut) {
 			scriptGrayscaleManual.set_in(tmpIn);
 			scriptGrayscaleManual.set_out(tmpOut);
-			scriptGrayscaleManual.forEach_root(tmpIn, tmpOut);
+			scriptGrayscaleManual.set_script(scriptGrayscaleManual);
+			//scriptGrayscaleManual.forEach_root(tmpIn, tmpOut);
+			scriptGrayscaleManual.invoke_filter();
 		}
 	}
 
@@ -275,7 +283,74 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 			scriptWavyManual.set_out(tmpOut);
 			scriptWavyManual.set_script(scriptWavyManual);
 			scriptWavyManual.set_height(mBmp.getHeight());
-			scriptWavyManual.forEach_root(tmpIn, tmpOut);
+			//scriptWavyManual.forEach_root(tmpIn, tmpOut);
+			scriptWavyManual.invoke_filter();
 		}
 	}
+	
+	private class HistogramTask extends FilterTask {
+		int step = 50;
+		int steps = (int) Math.ceil(mBmp.getHeight() / (double)step);
+		
+		@Override
+		void applyFilter(Allocation tmpIn, Allocation tmpOut) {
+			scriptHistogram.set_gSrc(tmpIn);
+			scriptHistogram.set_gStep(step);
+			scriptHistogram.set_gSteps(steps);
+
+			
+			// Create the [256][steps] buffer of integers for the partial sums
+			Type.Builder tb = new Type.Builder(mRS, Element.I32(mRS));
+			tb.setX(256).setY(steps);
+			Type t = tb.create();
+			Allocation mSums = Allocation.createTyped(mRS, t);
+			// Create the 1D [256] buffer for the final Sums
+			Allocation mSum = Allocation.createSized(mRS, Element.I32(mRS), 256);
+			// Set the buffers for the script
+			scriptHistogram.set_gSums(mSums);
+			scriptHistogram.set_gSum(mSum);
+			
+			// This first pass should be clipped because we want [step] threads not [256][step] threads
+			// To do this we have the ability to clip our launch
+			// using a LaunchOptions class 
+			Script.LaunchOptions lo = new Script.LaunchOptions();
+			// Set the range in the X dimension to be 0 to 1
+			// Note: the end is exclusive so this says only run X value 0
+			lo.setX(0, 1);
+			// Run the kernel with our launch options
+			// This will spawn one thread per Y coordinate, each with X=0
+			Log.v("blarg", "first pass");
+			scriptHistogram.forEach_pass1(mSums, lo);
+			
+			// Once the first pass is complete, we need to add up our partial sums
+			// The pass2 launch is unclipped. It spawns one thread per cell in the mSum buffer
+			// for a total of 256 threads.
+			Log.v("blarg", "second pass");
+
+			scriptHistogram.forEach_pass2(mSum);
+			
+			// Finally, we call our rescale function
+			Log.v("blarg", "rescale");
+
+			scriptHistogram.invoke_rescale();
+			
+			Log.v("blarg", "histogram");
+
+			Script.LaunchOptions lo2 = new Script.LaunchOptions();
+			scriptHistogram.forEach_drawhist(tmpIn, tmpOut);
+			
+			Log.v("blarg", "done");
+
+		}
+		
+		@Override
+		protected void onPostExecute(Bitmap bmp) {
+			Log.v("blarg", "setting bitmap");
+			mImg.setImageBitmap(bmp);
+			Log.v("blarg", " done setting bitmap");
+
+		}
+	}
+	
+
 }
