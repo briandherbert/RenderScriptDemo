@@ -29,13 +29,12 @@ void __attribute__((kernel)) pass1(int in, uint x, uint y) {
 		rsSetElementAt_int(gSums, 0, i, y);
 	}
 
-	if (x==0 && y== 0) {
-	rsDebug("gHeight ", gHeight);
-	rsDebug("gWidth ", gWidth);
-	rsDebug("gStep ", gStep);
+	if (x == 0 && y == 0) {
+		rsDebug("gHeight ", gHeight);
+		rsDebug("gWidth ", gWidth);
+		rsDebug("gStep ", gStep);
 
 	}
-
 
 	// Iterate over our image
 	for (int i = 0; i < gStep; i++) {
@@ -100,7 +99,8 @@ void __attribute__((kernel)) drawhis(uchar4 in, uint32_t x, uint32_t y) {
 	in.b = 255 - in.b;
 }
 
-void drawhist(const uchar4* v_in, uchar4* v_out, const void* usrData, uint x, uint y) {
+void drawhist(const uchar4* v_in, uchar4* v_out, const void* usrData, uint x,
+		uint y) {
 	int barWidth = gWidth / 256;
 	int bar = x / barWidth;
 	int val = min(255, (int) y);
@@ -117,18 +117,10 @@ void drawhist(const uchar4* v_in, uchar4* v_out, const void* usrData, uint x, ui
 		(*v_out).r = 0;
 		(*v_out).g = 0;
 		(*v_out).b = 0;
-	}
-
-	if (y % 100 == 0) {
-		(*v_out).r = 0;
-		(*v_out).g = 255;
-		(*v_out).b = 0;
-	}
-
-	if (bar > 256) {
+	} else if (bar == 256) {
 		(*v_out).r = 255;
-		(*v_out).g = 0;
-		(*v_out).b = 0;
+		(*v_out).g = 255;
+		(*v_out).b = 255;
 	}
 
 }
@@ -152,9 +144,9 @@ void drawxy(const uchar4* v_in, uchar4* v_out, const void* usrData, uint x,
 		(*v_out).g = 0;
 		(*v_out).b = 0;
 	} else {
-	(*v_out).r = val;
-	(*v_out).g = val;
-	(*v_out).b = val;
+		(*v_out).r = val;
+		(*v_out).g = val;
+		(*v_out).b = val;
 	}
 }
 

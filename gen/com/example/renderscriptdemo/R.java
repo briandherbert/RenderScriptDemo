@@ -34,13 +34,18 @@ public final class R {
         public static final int taj=0x7f020007;
     }
     public static final class id {
+        public static final int action_cabin=0x7f0a000f;
+        public static final int action_dalmation=0x7f0a0012;
+        public static final int action_merica=0x7f0a000e;
         public static final int action_reset=0x7f0a000d;
-        public static final int action_settings=0x7f0a000c;
+        public static final int action_scenery=0x7f0a0010;
+        public static final int action_taj=0x7f0a0011;
         public static final int btn_convolve=0x7f0a0007;
         public static final int btn_gauss=0x7f0a0006;
         public static final int btn_gray=0x7f0a0008;
         public static final int btn_gray_rs=0x7f0a0009;
         public static final int btn_histogram=0x7f0a000b;
+        public static final int btn_invert=0x7f0a000c;
         public static final int btn_wavy=0x7f0a000a;
         public static final int container=0x7f0a0000;
         public static final int fragment_image_filters=0x7f0a0001;
@@ -60,7 +65,8 @@ public final class R {
     public static final class raw {
         public static final int grayscale=0x7f040000;
         public static final int histogram=0x7f040001;
-        public static final int wavy=0x7f040002;
+        public static final int invert=0x7f040002;
+        public static final int wavy=0x7f040003;
     }
     public static final class string {
         public static final int action_settings=0x7f070001;

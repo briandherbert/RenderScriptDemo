@@ -32,7 +32,7 @@
             android:layout_weight="1"
             android:background="@color/button_bg"
             android:onClick="onClick"
-            android:text="Gauss" />
+            android:text="GaussI" />
 
         <Button
             android:id="@+id/btn_convolve"
@@ -41,7 +41,7 @@
             android:layout_weight="1"
             android:background="@color/button_bg"
             android:onClick="onClick"
-            android:text="Convolve" />
+            android:text="ConvolveI" />
 
         <Button
             android:id="@+id/btn_gray"
@@ -50,7 +50,7 @@
             android:layout_weight="1"
             android:background="@color/button_bg"
             android:onClick="onClick"
-            android:text="Gray" />
+            android:text="GrayI" />
     </LinearLayout>
 
     <LinearLayout
@@ -86,6 +86,15 @@
             android:background="@color/button_bg"
             android:onClick="onClick"
             android:text="Hist" />
+
+        <Button
+            android:id="@+id/btn_invert"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/button_bg"
+            android:onClick="onClick"
+            android:text="Invert" />
     </LinearLayout>
 
 </RelativeLayout>
