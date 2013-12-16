@@ -1,5 +1,7 @@
 package com.example.renderscriptdemo.fragment;
 
+import java.util.Set;
+
 import ca.tutortutor.grayscale.ScriptC_grayscale;
 import ca.tutortutor.grayscale.ScriptC_histogram;
 import ca.tutortutor.wavyimage.ScriptC_wavy;
@@ -187,7 +189,6 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 
 		// Histogram
 		scriptHistogram = new ScriptC_histogram(mRS);
-
 		
 		// Invert
 		scriptInvert = new ScriptC_invert(mRS);
@@ -238,13 +239,13 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 	public void onClick(View v) {
 		int id = v.getId();
 		if (id == R.id.btn_gauss) {
-			(new BlurTask()).execute(mBmp);
+			(new BlurIntrinsicTask()).execute(mBmp);
 		} else if (id == R.id.btn_convolve) {
-			(new ConvolveTask()).execute(mBmp);
+			(new ConvolveIntrinsicTask()).execute(mBmp);
 		} else if (id == R.id.btn_gray) {
-			(new GrayTask()).execute(mBmp);
-		} else if (id == R.id.btn_gray_rs) {
 			(new GrayIntrinsicTask()).execute(mBmp);
+		} else if (id == R.id.btn_gray_rs) {
+			(new GrayTask()).execute(mBmp);
 		} else if (id == R.id.btn_wavy) {
 			(new WavyTask()).execute(mBmp);
 		} else if (id == R.id.btn_histogram) {
@@ -261,6 +262,7 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 			Allocation alloc = Allocation.createFromBitmap(mRS, bmp);
 			// Allocation tmpOut = Allocation.createFromBitmap(mRS, bmp);
 			applyFilter(alloc, alloc);
+			
 			alloc.copyTo(bmp);
 			return bmp;
 		}
@@ -272,7 +274,7 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 		}
 	}
 
-	private class BlurTask extends FilterTask {
+	private class BlurIntrinsicTask extends FilterTask {
 		@Override
 		void applyFilter(Allocation tmpIn, Allocation tmpOut) {
 			scriptIBlur.setInput(tmpIn);
@@ -280,7 +282,7 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 		}
 	}
 
-	private class ConvolveTask extends FilterTask {
+	private class ConvolveIntrinsicTask extends FilterTask {
 		@Override
 		void applyFilter(Allocation tmpIn, Allocation tmpOut) {
 			scriptIConvolve.setInput(tmpIn);
@@ -288,7 +290,7 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 		}
 	}
 
-	private class GrayTask extends FilterTask {
+	private class GrayIntrinsicTask extends FilterTask {
 		@Override
 		void applyFilter(Allocation tmpIn, Allocation tmpOut) {
 			scriptIGray.setGreyscale();
@@ -296,7 +298,7 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 		}
 	}
 
-	private class GrayIntrinsicTask extends FilterTask {
+	private class GrayTask extends FilterTask {
 		@Override
 		void applyFilter(Allocation tmpIn, Allocation tmpOut) {
 			scriptGrayscale.set_in(tmpIn);
