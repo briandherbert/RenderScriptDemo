@@ -259,11 +259,11 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 		protected Bitmap doInBackground(Bitmap... bmps) {
 			Bitmap bmp = bmps[0];
 
-			Allocation alloc = Allocation.createFromBitmap(mRS, bmp);
-			// Allocation tmpOut = Allocation.createFromBitmap(mRS, bmp);
-			applyFilter(alloc, alloc);
+			Allocation tmpIn = Allocation.createFromBitmap(mRS, bmp);
+			Allocation tmpOut = Allocation.createFromBitmap(mRS, bmp);
+			applyFilter(tmpIn, tmpOut);
 			
-			alloc.copyTo(bmp);
+			tmpOut.copyTo(bmp);
 			return bmp;
 		}
 
@@ -304,7 +304,6 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 			scriptGrayscale.set_in(tmpIn);
 			scriptGrayscale.set_out(tmpOut);
 			scriptGrayscale.set_script(scriptGrayscale);
-			// scriptGrayscaleManual.forEach_root(tmpIn, tmpOut);
 			scriptGrayscale.invoke_filter();
 		}
 	}
@@ -316,7 +315,6 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 			scriptWavy.set_out(tmpOut);
 			scriptWavy.set_script(scriptWavy);
 			scriptWavy.set_height(mBmp.getHeight());
-			// scriptWavyManual.forEach_root(tmpIn, tmpOut);
 			scriptWavy.invoke_filter();
 		}
 	}
@@ -366,7 +364,6 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 			lo.setX(0, 1);
 			// Run the kernel with our launch options
 			// This will spawn one thread per Y coordinate, each with X=0
-			Log.v("blarg", "first pass");
 			scriptHistogram.forEach_pass1(mSums, lo);
 
 			// Once the first pass is complete, we need to add up our partial
@@ -374,30 +371,17 @@ public class ImageFiltersFragment extends Fragment implements OnClickListener {
 			// The pass2 launch is unclipped. It spawns one thread per cell in
 			// the mSum buffer
 			// for a total of 256 threads.
-			Log.v("blarg", "second pass");
-
 			scriptHistogram.forEach_pass2(mSum);
 
 			// Finally, we call our rescale function
-			Log.v("blarg", "rescale");
-
 			scriptHistogram.invoke_rescale();
 
-			Log.v("blarg", "histogram");
-
-			Script.LaunchOptions lo2 = new Script.LaunchOptions();
 			scriptHistogram.forEach_drawhist(tmpIn, tmpOut);
-
-			Log.v("blarg", "done");
-
 		}
 
 		@Override
 		protected void onPostExecute(Bitmap bmp) {
-			Log.v("blarg", "setting bitmap");
 			mImg.setImageBitmap(bmp);
-			Log.v("blarg", " done setting bitmap");
-
 		}
 	}
 
